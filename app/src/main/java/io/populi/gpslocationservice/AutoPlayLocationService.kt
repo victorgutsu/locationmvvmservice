@@ -31,7 +31,7 @@ class AutoPlayLocationService : LifecycleService() {
             .notificationLiveData
             .observe(this, Observer {
                 AutoPlayNotificationManager(this)
-                    .buildNotification(AutoPlayNotificationManager.AUTOPLAY_NOTIFICATION_ID, "$it")
+                    .buildNotification(AutoPlayNotificationManager.AUTOPLAY_NOTIFICATION_ID, it)
             })
         viewModel.start()
     }
@@ -39,5 +39,10 @@ class AutoPlayLocationService : LifecycleService() {
     override fun onTaskRemoved(rootIntent: Intent?) {
         super.onTaskRemoved(rootIntent)
         stopSelf()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        viewModel.stop()
     }
 }

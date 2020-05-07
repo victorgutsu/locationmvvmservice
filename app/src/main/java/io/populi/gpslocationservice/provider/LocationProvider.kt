@@ -18,8 +18,8 @@ import java.util.concurrent.TimeUnit
 class LocationProvider(val context: Context) {
     private val TAG = "MainViewModel"
 
-    private val LOCATION_INTERVAL = 500
-    private val LOCATION_DISTANCE = 10
+    private val LOCATION_INTERVAL = 100
+    private val LOCATION_DISTANCE = 2
 
     private var mLocationManager: LocationManager? = null
     private var mLocationListener: LocationListener = AutoPlayLocationListener()
@@ -60,23 +60,13 @@ class LocationProvider(val context: Context) {
     }
 
     fun start(): Observable<Location> {
-        //FIXME why last location does not come!
-        lastLocation(context, TimeUnit.SECONDS.toMillis(5))?.let {
-            mLocationListener.onLocationChanged(it)
-        }
-        listenGpsChanges()
-
-        return source
-    }
-
-    private fun listenGpsChanges() {
         if (mLocationManager == null) {
             mLocationManager =
                 context.getSystemService(Context.LOCATION_SERVICE) as LocationManager
         }
         try {
             mLocationManager?.requestLocationUpdates(
-                LocationManager.PASSIVE_PROVIDER,
+                LocationManager.GPS_PROVIDER,
                 LOCATION_INTERVAL.toLong(),
                 LOCATION_DISTANCE.toFloat(),
                 mLocationListener
@@ -86,26 +76,6 @@ class LocationProvider(val context: Context) {
         } catch (ex: IllegalArgumentException) {
             Log.e(TAG, "gps provider does not exist " + ex.message)
         }
-    }
-
-    private fun lastLocation(context: Context, locationTimeoutMs: Long = 0): Location? {
-        when {
-            mLocationManager == null -> return null
-            ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION)
-                    != PackageManager.PERMISSION_GRANTED -> return null
-            else -> {
-                val lastKnownLocationGPS: Location? =
-                    mLocationManager?.getLastKnownLocation(LocationManager.GPS_PROVIDER)
-                val lastLoc = lastKnownLocationGPS
-                    ?: mLocationManager?.getLastKnownLocation(LocationManager.PASSIVE_PROVIDER)
-                return if (lastLoc != null && locationTimeoutMs != 0L) {
-                    val currentMs = Calendar.getInstance().timeInMillis
-                    val locationTime = lastLoc.time
-                    if (currentMs - locationTime < locationTimeoutMs) {
-                        return lastLoc
-                    } else null
-                } else lastLoc
-            }
-        }
+        return source
     }
 }

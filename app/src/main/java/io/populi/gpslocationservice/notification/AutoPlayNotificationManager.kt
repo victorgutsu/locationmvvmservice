@@ -28,14 +28,14 @@ class AutoPlayNotificationManager(private val context: Context) {
         mNotificationManagerCompat.cancelAll()
     }
 
-    fun buildNotification(id: Int, message: String) {
+    fun buildNotification(id: Int, message: String?="") {
         mNotificationManagerCompat?.notify(
             id,
             buildNotification(message)
         )
     }
 
-    fun buildNotification(message: String? = ""): Notification {
+    fun buildNotification(message: String?=null): Notification {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             createChannel()
         }
@@ -48,6 +48,7 @@ class AutoPlayNotificationManager(private val context: Context) {
             .setContentTitle("AutoPlay")
             .setContentText(message)
             .setContentInfo("Info")
+            .setStyle(NotificationCompat.BigTextStyle().bigText(message))
             .build()
     }
 
